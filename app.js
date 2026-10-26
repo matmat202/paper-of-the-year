@@ -20,7 +20,7 @@ function workEl(w, big) {
     else au.append(p.name);
   });
   if (line.hidden > 0) au.append(` + ${fmt(line.hidden)}${line.truncated ? '+' : ''} more`);
-  if (!line.shown.some((p) => p.stanford)) au.append(' (Stanford authors further down the list)');
+  if (!line.shown.some((p) => p.stanford)) au.append(line.truncated ? ' (Stanford authors past the first 100 listed)' : ' (Stanford authors further down the list)');
   frag.append(au);
   const meta = document.createElement('div');
   meta.className = 'meta';

@@ -81,6 +81,14 @@ ok('no title appears in two years of any list', (() => {
   }
   return true;
 })());
+// Every work names a Stanford author, unless OpenAlex itself cut the list at 100. build.py
+// used to keep only the first 8 names, so SciPy 1.0 (Stanford's paper of 2020, its Stanford
+// author 66th) and 103 others shipped with nobody from Stanford to bold.
+const all = D.years.flatMap((y) => [...y.top, ...Object.values(y.domains).flat()]);
+const noStanford = all.filter((x) => !x.authors.some((a) => a[1]));
+eq('no Stanford author only where the list is truncated', noStanford.filter((x) => !x.truncated).map((x) => x.id), []);
+ok('2020\'s SciPy names its Stanford author', Y.get(2020).top[0].authors.some((a) => a[1]));
+ok('the shipped name count adds up', all.every((x) => x.more >= 0 && x.authors.length <= 9));
 // Positive controls: the famous ones are still there.
 ok('1976 has Diffie-Hellman', Y.get(1976).top.some((x) => /new directions in cryptography/i.test(x.title)));
 ok('1998 has the Brin-Page search engine paper', Y.get(1998).top.some((x) => /hypertextual web search engine/i.test(x.title)));
