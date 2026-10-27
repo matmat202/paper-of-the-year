@@ -41,23 +41,37 @@ eq('hidden count includes names never shipped', al.hidden, 2 + 10);
 const short = L.authorLine(w('F', 't', [['S1', 1], ['A2', 0]]), 4);
 eq('short list shown whole', [short.shown.length, short.hidden, short.gap], [2, 0, false]);
 ok('truncated flag passes through', L.authorLine(w('G', 't', [['A', 0]], { truncated: true })).truncated);
+eq('truncated is a boolean either way, past the cut too', [L.authorLine(many, 4).truncated, L.authorLine({ ...many, truncated: 1 }, 4).truncated,
+  L.authorLine(w('G', 't', [['A', 0]])).truncated], [false, true, false]);
+eq('four names by default', L.authorLine(w('H', 't', [['A', 1], ['B', 0], ['C', 0], ['D', 0], ['E', 0]])).shown.length, 4);
 
 // --- bar, urls, state -------------------------------------------------------------------
 eq('bar of the max is 1', L.barFrac(46778, 46778), 1);
 eq('bar of zero is 0', L.barFrac(0, 46778), 0);
 ok('bar is log scale: 177 of 46,778 is visible', L.barFrac(177, 46778) > 0.4);
 ok('bar is monotonic', L.barFrac(100, 1000) < L.barFrac(200, 1000));
+// log10(cites + 1) / log10(max + 1): 9 of 99 is exactly half, 1 of 99 is log10(2)/2.
+eq('a count above the max is a full bar', L.barFrac(500, 100), 1);
+eq('bar values on the log scale', [L.barFrac(9, 99), +L.barFrac(1, 99).toFixed(6), L.barFrac(1, 1)], [0.5, +(Math.log10(2) / 2).toFixed(6), 1]);
+// Compared with ===: eq() goes through JSON, which writes NaN as null.
+eq('no bar for nonsense', [L.barFrac(5, 0), L.barFrac(-5, 100), L.barFrac(null, 100), L.barFrac(NaN, 100), L.barFrac(5, NaN)].map((x) => x === 0), [true, true, true, true, true]);
 eq('doi preferred', L.workUrl({ id: 'W1', doi: 'https://doi.org/10.1/x' }), 'https://doi.org/10.1/x');
 eq('openalex fallback', L.workUrl({ id: 'W1', doi: null }), 'https://openalex.org/W1');
 eq('decade', [L.decadeOf(1979), L.decadeOf(1980), L.decadeOf(2025)], [1970, 1980, 2020]);
 eq('state encodes', L.encodeState({ domain: '3', q: ' crypto ' }), '?f=3&q=crypto');
 eq('empty state', L.encodeState({ domain: '', q: '' }), '');
+eq('a field with no query', L.encodeState({ domain: '2' }), '?f=2');
+eq('a query is cut at 80', L.decodeState('?q=' + 'x'.repeat(90)).q.length, 80);
+eq('fold keeps a zero', L.fold(0), '0');
 eq('state round-trips', L.decodeState(L.encodeState({ domain: '4', q: 'a b' })), { domain: '4', q: 'a b' });
 eq('bad field falls back', L.decodeState('?f=9').domain, '');
 
 // --- the shipped data -------------------------------------------------------------------
 const here = fileURLToPath(new URL('.', import.meta.url));
 const D = JSON.parse(readFileSync(here + 'data/years.json', 'utf8'));
+const YS = D.years || D;
+// "of N" under a field is that field's pool: never smaller than what it shows, never 0.
+eq('shipped: every field\'s pool holds what it shows', YS.flatMap((y) => Object.entries(y.domains).filter(([d, ws]) => ws.length && !(y.domain_counts[d] >= ws.length)).map(([d]) => `${y.year}/${d}`)), []);
 const Y = new Map(D.years.map((y) => [y.year, y]));
 eq('every year 1900-2025', D.years.map((y) => y.year), Array.from({ length: 126 }, (_, i) => 1900 + i));
 ok('every year has a paper', D.years.every((y) => y.top.length >= 1));
