@@ -51,7 +51,7 @@ export function barFrac(cites, max) {
 export const fmt = (n) => (n == null ? '—' : n.toLocaleString('en-US'));
 
 export function workUrl(w) {
-  return w.doi || `https://openalex.org/${w.id}`;
+  return w.doi || w.url || `https://openalex.org/${w.id}`;
 }
 
 export const decadeOf = (y) => Math.floor(y / 10) * 10;

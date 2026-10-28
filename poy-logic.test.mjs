@@ -57,6 +57,7 @@ eq('bar values on the log scale', [L.barFrac(9, 99), +L.barFrac(1, 99).toFixed(6
 eq('no bar for nonsense', [L.barFrac(5, 0), L.barFrac(-5, 100), L.barFrac(null, 100), L.barFrac(NaN, 100), L.barFrac(5, NaN)].map((x) => x === 0), [true, true, true, true, true]);
 eq('doi preferred', L.workUrl({ id: 'W1', doi: 'https://doi.org/10.1/x' }), 'https://doi.org/10.1/x');
 eq('openalex fallback', L.workUrl({ id: 'W1', doi: null }), 'https://openalex.org/W1');
+eq('landing page when the DOI is dead', L.workUrl({ id: 'W1', doi: null, url: 'https://jmlr.org/x' }), 'https://jmlr.org/x');
 eq('decade', [L.decadeOf(1979), L.decadeOf(1980), L.decadeOf(2025)], [1970, 1980, 2020]);
 eq('state encodes', L.encodeState({ domain: '3', q: ' crypto ' }), '?f=3&q=crypto');
 eq('empty state', L.encodeState({ domain: '', q: '' }), '');
@@ -108,6 +109,13 @@ ok('1976 has Diffie-Hellman', Y.get(1976).top.some((x) => /new directions in cry
 ok('1998 has the Brin-Page search engine paper', Y.get(1998).top.some((x) => /hypertextual web search engine/i.test(x.title)));
 ok('1979 is the bootstrap', /bootstrap/i.test(Y.get(1979).top[0].title));
 ok('the Physical Sciences list exists for 1957', (Y.get(1957).domains['3'] || []).length >= 1);
+// A DOI doi.org does not have is a dead link (check_dois.py lists them; build.py drops them).
+// 10.5555 is ACM's unregistered pseudo-prefix: it never resolves, list or no list.
+const DEAD = new Set(JSON.parse(readFileSync(here + '../data/dead-dois.json', 'utf8')).dead);
+const shippedDois = D.years.flatMap((y) => [...y.top, ...Object.values(y.domains).flat()]).map((x) => x.doi).filter(Boolean);
+eq('shipped: no DOI doi.org says it lacks', [...new Set(shippedDois.filter((d) => DEAD.has(d) || /\/10\.5555\//.test(d)))], []);
+const lda = D.years.flatMap((y) => y.top).filter((x) => /latent dirichlet/i.test(x.title));
+ok('LDA (2003) links to the paper at jmlr.org, not a dead DOI', lda.length >= 1 && lda.every((x) => /^https:\/\/www\.jmlr\.org\//.test(L.workUrl(x))));
 
 console.log(`${fail ? 'FAILED' : 'ok'}: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
