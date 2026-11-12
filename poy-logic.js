@@ -54,6 +54,17 @@ export function workUrl(w) {
   return w.doi || w.url || `https://openalex.org/${w.id}`;
 }
 
+// The year the counts were fetched in is still running: its list is a leader, not a result.
+export const isPartial = (year, fetched) => year >= Number(String(fetched || '').slice(0, 4));
+
+// "12 Nov 2026" from the extract's ISO date; the date as given if it does not parse.
+export function asOf(fetched) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fetched || '');
+  if (!m) return String(fetched || '');
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m[2] - 1];
+  return mon ? `${+m[3]} ${mon} ${m[1]}` : String(fetched);
+}
+
 export const decadeOf = (y) => Math.floor(y / 10) * 10;
 
 // ?f=3&q=cryptography — unknown values fall back.

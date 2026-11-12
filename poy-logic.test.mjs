@@ -67,6 +67,15 @@ eq('fold keeps a zero', L.fold(0), '0');
 eq('state round-trips', L.decodeState(L.encodeState({ domain: '4', q: 'a b' })), { domain: '4', q: 'a b' });
 eq('bad field falls back', L.decodeState('?f=9').domain, '');
 
+// --- the running year -------------------------------------------------------------------
+ok('the fetch year is partial', L.isPartial(2026, '2026-11-12'));
+ok('a later year is partial', L.isPartial(2027, '2026-11-12'));
+ok('the year before is not', !L.isPartial(2025, '2026-11-12'));
+ok('an early-January fetch leaves older years final', !L.isPartial(1950, '2026-01-01'));
+eq('as-of date', L.asOf('2026-11-02'), '2 Nov 2026');
+eq('as-of keeps an unparseable date', L.asOf('soon'), 'soon');
+eq('as-of rejects month 13', L.asOf('2026-13-01'), '2026-13-01');
+
 // --- the shipped data -------------------------------------------------------------------
 const here = fileURLToPath(new URL('.', import.meta.url));
 const D = JSON.parse(readFileSync(here + 'data/years.json', 'utf8'));
@@ -74,7 +83,10 @@ const YS = D.years || D;
 // "of N" under a field is that field's pool: never smaller than what it shows, never 0.
 eq('shipped: every field\'s pool holds what it shows', YS.flatMap((y) => Object.entries(y.domains).filter(([d, ws]) => ws.length && !(y.domain_counts[d] >= ws.length)).map(([d]) => `${y.year}/${d}`)), []);
 const Y = new Map(D.years.map((y) => [y.year, y]));
-eq('every year 1900-2025', D.years.map((y) => y.year), Array.from({ length: 126 }, (_, i) => 1900 + i));
+// Through the fetch year: a pinned last year left 2026 off the page all of November 2026.
+const lastYear = Number(D.fetched.slice(0, 4));
+eq('every year 1900 through the fetch year', D.years.map((y) => y.year), Array.from({ length: lastYear - 1899 }, (_, i) => 1900 + i));
+ok('the fetch date is a real ISO date', /^\d{4}-\d{2}-\d{2}$/.test(D.fetched) && L.asOf(D.fetched) !== D.fetched);
 ok('every year has a paper', D.years.every((y) => y.top.length >= 1));
 ok('top lists are sorted by citations', D.years.every((y) => y.top.every((x, i) => i === 0 || y.top[i - 1].cites >= x.cites)));
 ok('domain lists are sorted by citations', D.years.every((y) => Object.values(y.domains).every((l) => l.every((x, i) => i === 0 || l[i - 1].cites >= x.cites))));

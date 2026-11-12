@@ -1,4 +1,4 @@
-import { search, authorLine, barFrac, fmt, workUrl, decadeOf, encodeState, decodeState } from './poy-logic.js';
+import { search, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState } from './poy-logic.js';
 
 const $ = (id) => document.getElementById(id);
 let D = null;
@@ -43,6 +43,7 @@ function draw() {
   $('status').textContent = state.q
     ? `${rows.length} ${rows.length === 1 ? 'year has' : 'years have'} a match for “${state.q}” in ${label}.`
     : `${rows.length} years, ${label}.`;
+  $('status').textContent += ` Citations as of ${asOf(D.fetched)}.`;
   if (!rows.length) {
     const li = document.createElement('li'); li.className = 'empty';
     li.textContent = 'Nothing matches. Try fewer words, or every field.';
@@ -52,7 +53,8 @@ function draw() {
     const li = document.createElement('li');
     li.id = `y${r.year}`;
     const y = document.createElement('div'); y.className = 'yr'; y.textContent = r.year;
-    const sm = document.createElement('small'); sm.textContent = `of ${fmt(r.count)}`;
+    const sm = document.createElement('small');
+    sm.textContent = isPartial(r.year, D.fetched) ? `so far, of ${fmt(r.count)}` : `of ${fmt(r.count)}`;
     sm.title = `${fmt(r.count)} Stanford works that year in OpenAlex${state.domain ? `, ${D.domains[state.domain]}` : ''}`;
     y.append(sm);
     const body = document.createElement('div');
