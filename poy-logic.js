@@ -10,8 +10,13 @@ export function worksFor(year, domain) {
 
 export const fold = (s) => String(s ?? '').normalize('NFD').replace(/\p{M}+/gu, '').toLowerCase();
 
+// "1998" is that year and "1990s" that decade: the first thing people type into this box
+// is a birth year, and no title holds one.
+const yearWord = (x, year) => (/^\d{4}$/.test(x) && +x === year) || (/^\d{3}0s$/.test(x) && +x.slice(0, 4) === decadeOf(year));
+
 /* Years whose shown works match a query (every word, in title, authors, topic or
- * field). Each kept year carries only its matching works, in their original order. */
+ * field, or the year itself). Each kept year carries only its matching works, in their
+ * original order. */
 export function search(years, domain, q) {
   const words = fold(q).split(/\s+/).filter(Boolean);
   const out = [];
@@ -19,7 +24,7 @@ export function search(years, domain, q) {
     const ws = worksFor(y, domain).filter((w) => {
       if (!words.length) return true;
       const hay = fold(`${w.title} ${w.authors.map((a) => a[0]).join(' ')} ${w.topic || ''} ${w.field || ''}`);
-      return words.every((x) => hay.includes(x));
+      return words.every((x) => yearWord(x, y.year) || hay.includes(x));
     });
     // "of N" is the pool the list was drawn from: that field's works when one is chosen.
     const count = domain ? (y.domain_counts || {})[domain] ?? null : y.count;

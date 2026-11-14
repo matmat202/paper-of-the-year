@@ -27,6 +27,12 @@ eq('domain with no works drops the year', L.search(years, '3', '').map((y) => y.
 eq('title search', L.search(years, '', 'search engine').map((y) => y.year), [1998]);
 eq('author search, accent- and case-blind', L.search(years, '', 'EFRÓN').map((y) => y.year), [1979]);
 eq('every word must match', L.search(years, '', 'brin cryptography'), []);
+eq('a year finds that year', L.search(years, '', '1998').map((y) => y.year), [1998]);
+eq('a year keeps all its works', L.search(years, '', '1979')[0]?.works.map((x) => x.id), ['B', 'C']);
+eq('a decade finds its years', L.search(years, '', '1970s').map((y) => y.year), [1976, 1979]);
+eq('year and word both apply', L.search(years, '', '1979 flavell')[0]?.works.map((x) => x.id), ['C']);
+eq('year with a word from another year', L.search(years, '', '1998 efron'), []);
+eq('a number that is not the year still matches text', L.search(years, '', '1999'), []);
 eq('search keeps only matching works', L.search(years, '', 'flavell')[0].works.map((x) => x.id), ['C']);
 eq('search within a field', L.search(years, '2', 'bootstrap'), []);
 eq('count is the whole year unfiltered', L.search(years, '', 'efron')[0].count, 2346);
