@@ -97,6 +97,12 @@ ok('1971 is not the 1962 Learning-by-Doing reprint', !/learning by doing/i.test(
 ok('2017 is not Festinger 1957', !/cognitive dissonance/i.test(Y.get(2017).top[0].title));
 ok('1990 is not Hotelling 1929', !/stability in competition/i.test(Y.get(1990).top[0].title));
 ok('2001 is not the 1991 Cover & Thomas book', !/elements of information theory/i.test(Y.get(2001).top[0].title));
+// Re-dated by their citations (build.py cited_before_its_year), found 2026-11-14 in any list:
+const anyList = (y) => [...Y.get(y).top, ...Object.values(Y.get(y).domains).flat()].map((x) => x.title);
+ok('2026 does not list Flavell\'s 1987 metacognition chapter', !anyList(2026).some((t) => /development of metacognition/i.test(t)));
+ok('2024 does not list Traugott\'s 2002 semantic change book', !anyList(2024).some((t) => /regularity in semantic change/i.test(t)));
+ok('2013 does not list Kahneman & Tversky 1984', !anyList(2013).some((t) => /choices, values, and frames/i.test(t)));
+ok('the citation rule dropped something', (D.dropped['redated (cited before its year)'] || []).length >= 1);
 ok('1960 is not a book review', !/\. By [A-Z]/.test(Y.get(1960).top[0].title));
 ok('1906 is not "A Correction"', !/^a correction/i.test(Y.get(1906).top[0].title));
 ok('no title is a paper of the year twice', new Set(firstTitles).size === firstTitles.length);

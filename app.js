@@ -85,6 +85,7 @@ async function main() {
   catch { $('status').textContent = 'Could not load the data. Try reloading.'; return; }
   MAX = Math.max(...D.years.flatMap((y) => [...y.top, ...Object.values(y.domains).flat()].map((w) => w.cites)));
   $('redated').textContent = Object.values(D.redated).join('; ');
+  $('autodated').textContent = (D.dropped['redated (cited before its year)'] || []).map(([y, , t]) => `${t}, under ${y}`).join('; ') || 'none this fetch';
   const ul = $('fields');
   for (const [d, name] of [['', 'Every field'], ...Object.entries(D.domains)]) {
     const li = document.createElement('li');
