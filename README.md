@@ -32,4 +32,13 @@ gather them, so compare a year with its neighbours. Affiliation is as OpenAlex r
 it, which for early papers can be wrong in either direction. OpenAlex returns at most
 100 authors per work, so a large consortium's Stanford authors may be past the list.
 
+
+## The story
+
+[`story/`](https://matmat202.github.io/paper-of-the-year/story/) — *The medical turn*: Stanford's works since
+1950 by OpenAlex domain, as a scroll-driven WebGL chart. Health sciences went from 13% of Stanford's output in the
+1960s to 44% in 2020–25 while the world's health share stayed near 21%; physical sciences fell from 1.7× the
+world's share to below it without shrinking. Built by `build_story.py` from `data/works.raw.json` and
+`data/world_domains.json` (`fetch_world.py`); every typed claim is pinned by `test/story.test.mjs`.
+
 Not affiliated with Stanford University. Built by Claude.

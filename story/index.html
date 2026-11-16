@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Medical Turn · how Stanford's research moved from physics to health</title>
+<meta name="description" content="A scrolling story: Stanford's research since 1950, by field. Physical sciences were half of Stanford in the 1960s; health is the largest share now — twice the world's — and the world did not make the same turn.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="plot" aria-hidden="true"><div id="axes"></div></div>
+<canvas id="gl" aria-hidden="true"></canvas>
+<p id="err" role="alert"></p>
+<main>
+
+<section class="step" data-kind="field"><div>
+  <p class="kicker">Paper of the Year · a story</p>
+  <h1>The medical turn</h1>
+  <p>OpenAlex lists <b data-fact="total"></b> papers, reviews, books and chapters with a
+  Stanford author from <b data-fact="first"></b> to <b data-fact="last"></b>. Every dot
+  on this page is <b data-fact="unit"></b> of them a year, in one decade.</p>
+  <p class="small">Scroll ↓</p>
+</div></section>
+
+<section class="step" data-kind="counts"><div>
+  <p class="kicker">How much</p>
+  <h2>From hundreds a year to eighteen thousand</h2>
+  <p>In 1960 Stanford published <b data-fact="yt:1960"></b> works. In 2025 it published
+  <b data-fact="yt:2025"></b>. Each colour is one of OpenAlex's four domains:
+  <span class="w he">health</span>, <span class="w li">life</span>,
+  <span class="w so">social</span> and <span class="w ph">physical sciences</span>.</p>
+  <p>The columns are works a year, so the last one, six years long, is drawn to the same
+  scale as the decades. The growth makes the early columns too short to read. Stretch every column to the
+  same height and look at the mix instead.</p>
+</div></section>
+
+<section class="step" data-kind="share"><div>
+  <p class="kicker">Chapter 1 · The mix</p>
+  <h2>A physics school</h2>
+  <p>In the 1960s, the <span class="w ph">physical sciences</span> — physics, engineering,
+  chemistry, computer science, mathematics, the earth sciences — were
+  <b data-fact="share:3:1960s"></b> of everything Stanford published. More than half.
+  <span class="w he">Health</span> was <b data-fact="share:4:1960s"></b>.</p>
+  <p>Physical sciences stayed the largest domain at Stanford every decade from the 1950s to
+  the 2000s.</p>
+</div></section>
+
+<section class="step" data-kind="health"><div>
+  <p class="kicker">Chapter 2 · Then medicine</p>
+  <h2>Health climbs every decade</h2>
+  <p>From <b data-fact="share:4:1960s"></b> in the 1960s, the
+  <span class="w he">health sciences</span>' share has risen every decade since:
+  <b data-fact="share:4:1990s"></b> in the 1990s, <b data-fact="share:4:2010s"></b> in the
+  2010s, <b data-fact="share:4:2020–25"></b> in <b data-fact="lastp"></b>.</p>
+  <p>Since <b data-fact="overtake"></b>, Stanford has published more health papers than
+  physical-science papers every single year.</p>
+</div></section>
+
+<section class="step" data-kind="world"><div>
+  <p class="kicker">Chapter 3 · Was it everyone?</p>
+  <h2>The world did not turn</h2>
+  <p>Maybe all of science moved to medicine and Stanford just went along. It did not. The
+  black line in each column is the world's health share, counted the same way across every
+  work in OpenAlex: <b data-fact="wshare:4:1970s"></b> in the 1970s,
+  <b data-fact="wshare:4:2020–25"></b> in <b data-fact="lastp"></b>. Flat for fifty years.</p>
+  <p>Stanford went from about half the world's health share
+  (<b data-fact="ratio:4:1960s"></b>) to twice it (<b data-fact="ratio:4:2020–25"></b>).</p>
+</div></section>
+
+<section class="step" data-kind="phys-world"><div>
+  <p class="kicker">Chapter 4 · The other side</p>
+  <h2>Physics fell below the world</h2>
+  <p>The same comparison for the <span class="w ph">physical sciences</span>, read down from
+  the top of each column. In the 1960s Stanford's share was <b data-fact="ratio:3:1960s"></b>
+  the world's. In <b data-fact="lastp"></b> it is <b data-fact="share:3:2020–25"></b>
+  against the world's <b data-fact="wshare:3:2020–25"></b>: for the first time, below it.</p>
+</div></section>
+
+<section class="step" data-kind="phys-counts"><div>
+  <p class="kicker">Chapter 5 · Not a decline</p>
+  <h2>Physics did not shrink</h2>
+  <p>Back to raw counts. Stanford's physical-sciences output grew from
+  <b data-fact="pc:3:1980s"></b> works in the 1980s to <b data-fact="pc:3:2010s"></b> in the
+  2010s — three times as many. Since 2015 it has held between <b data-fact="ymin:3:2015:2025"></b>
+  and <b data-fact="ymax:3:2015:2025"></b> a year.</p>
+  <p>Over the same years health went from <b data-fact="yc:2015:4"></b> to
+  <b data-fact="yc:2025:4"></b> a year, nearly doubling. The share moved because medicine
+  grew past physics, not because physics went away.</p>
+</div></section>
+
+<section class="step" data-kind="share"><div>
+  <p class="kicker">Coda · The papers themselves</p>
+  <h2>Every year has a paper</h2>
+  <p>The site this story was cut from names Stanford's most-cited work for every year
+  since 1900, filterable by the same four domains: <a href="../">Paper of the Year</a>.</p>
+  <p class="small">Counts are OpenAlex works of type article, review, book or book chapter,
+  not retracted, with an author whose institution lineage includes Stanford
+  (I97018004, which also counts Stanford Medicine and Stanford Health Care); the world is
+  the same filter without the Stanford condition. A work's domain is that of its primary
+  topic, which OpenAlex assigns by classifier; works with no topic (at most 1.1% of
+  any period) are left out of both. Hospital affiliations may be credited to Stanford more completely in recent
+  decades than in old records, which would lift the late health share; the world's own
+  share is the check that the turn is not simply science's. The current, partial year is
+  left out, and so are the years before 1950, when Stanford published under 200 works a
+  year. Data fetched from OpenAlex, refreshed with the site.</p>
+</div></section>
+
+</main>
+<script type="module" src="story.js"></script>
+</body>
+</html>
