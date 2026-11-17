@@ -29,7 +29,7 @@ function workEl(w, big) {
   fill.style.width = `${(barFrac(w.cites, MAX) * 100).toFixed(1)}%`;
   track.append(fill);
   const c = document.createElement('span'); c.className = 'c'; c.textContent = `${fmt(w.cites)} citations`;
-  const f = document.createElement('span'); f.textContent = [w.field, w.type === 'book' ? 'book' : null].filter(Boolean).join(' · ');
+  const f = document.createElement('span'); f.textContent = [w.field, { book: 'book', 'conference-paper': 'conference paper' }[w.type]].filter(Boolean).join(' · ');
   meta.append(track, c, f);
   frag.append(meta);
   return frag;
