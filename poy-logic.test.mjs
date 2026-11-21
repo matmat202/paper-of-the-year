@@ -128,6 +128,20 @@ const noStanford = all.filter((x) => !x.authors.some((a) => a[1]));
 eq('no Stanford author only where the list is truncated', noStanford.filter((x) => !x.truncated).map((x) => x.id), []);
 ok('2020\'s SciPy names its Stanford author', Y.get(2020).top[0].authors.some((a) => a[1]));
 ok('the shipped name count adds up', all.every((x) => x.more >= 0 && x.authors.length <= 9));
+// --- per-year share links ----------------------------------------------------------
+eq('year link, every field', L.yearLink(years, 1998, ''), '#y1998');
+eq('year link keeps a field the year has', L.yearLink(years, 1979, '3'), '?f=3#y1979');
+eq('year link drops a field the year lacks', L.yearLink(years, 1998, '3'), '#y1998');
+eq('year link drops an empty field list', L.yearLink(years, 1976, '1'), '#y1976');
+eq('year link of an unknown year has no field', L.yearLink(years, 2001, '3'), '#y2001');
+eq('hash year', L.hashYear('#y1998'), 1998);
+eq('hash that is not a year', [L.hashYear('#foot'), L.hashYear('#y19980'), L.hashYear(''), L.hashYear(undefined)], [null, null, null, null]);
+// Every link the page would hand out lands on a drawn row in that field.
+for (const d of L.DOMAIN_KEYS) {
+  const bad = D.years.filter((y) => { const u = L.yearLink(D.years, y.year, d); const s = L.decodeState(u.split('#')[0]);
+    return !L.search(D.years, s.domain, s.q).some((r) => r.year === L.hashYear('#' + u.split('#')[1])); }).map((y) => y.year);
+  eq(`shipped: every year link lands on its row (field '${d}')`, bad, []);
+}
 // Positive controls: the famous ones are still there.
 ok('1976 has Diffie-Hellman', Y.get(1976).top.some((x) => /new directions in cryptography/i.test(x.title)));
 ok('1998 has the Brin-Page search engine paper', Y.get(1998).top.some((x) => /hypertextual web search engine/i.test(x.title)));

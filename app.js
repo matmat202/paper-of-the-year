@@ -1,4 +1,4 @@
-import { search, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState } from './poy-logic.js';
+import { search, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState, yearLink, hashYear } from './poy-logic.js';
 
 const $ = (id) => document.getElementById(id);
 let D = null;
@@ -52,11 +52,18 @@ function draw() {
   for (const r of rows) {
     const li = document.createElement('li');
     li.id = `y${r.year}`;
-    const y = document.createElement('div'); y.className = 'yr'; y.textContent = r.year;
+    const y = document.createElement('div'); y.className = 'yr';
+    const yl = document.createElement('a'); yl.href = yearLink(D.years, r.year, state.domain); yl.textContent = r.year;
+    yl.title = `Link to ${r.year}`;
+    y.append(yl);
     const sm = document.createElement('small');
     sm.textContent = isPartial(r.year, D.fetched) ? `so far, of ${fmt(r.count)}` : `of ${fmt(r.count)}`;
     sm.title = `${fmt(r.count)} Stanford works that year in OpenAlex${state.domain ? `, ${D.domains[state.domain]}` : ''}`;
     y.append(sm);
+    const sh = document.createElement('button'); sh.type = 'button'; sh.className = 'share'; sh.textContent = 'Share';
+    sh.setAttribute('aria-label', `Share ${r.year}`);
+    sh.addEventListener('click', () => share(r, sh));
+    y.append(sh);
     const body = document.createElement('div');
     body.append(workEl(r.works[0], true));
     if (r.works.length > 1) {
@@ -69,13 +76,36 @@ function draw() {
     li.append(y, body);
     ol.append(li);
   }
+  mark();
   const jump = $('jump');
   const decades = [...new Set(rows.map((r) => decadeOf(r.year)))];
   jump.replaceChildren(new Option('Decade', ''), ...decades.map((d) => new Option(`${d}s`, String(d))));
 }
 
-function sync() {
-  history.replaceState(null, '', location.pathname + encodeState(state));
+// The row a #y1998 link points at is outlined; :target is not used because the rows are
+// drawn after the fragment is read.
+function mark() {
+  const y = hashYear(location.hash);
+  for (const li of document.querySelectorAll('#years > li.hit')) li.classList.remove('hit');
+  if (y) document.getElementById(`y${y}`)?.classList.add('hit');
+}
+
+async function share(r, btn) {
+  const url = new URL(yearLink(D.years, r.year, state.domain), location.href).href;
+  const title = `${r.year}: ${r.works[0].title}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: `Paper of the Year · ${title}`, url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); btn.textContent = 'Copied'; }
+  catch { prompt('Copy this link', url); return; }
+  setTimeout(() => { btn.textContent = 'Share'; }, 1600);
+}
+
+// keepHash on the first call only: replacing the address drops #y1998, which is how a
+// shared link was losing its year before the page could scroll to it.
+function sync(keepHash = false) {
+  history.replaceState(null, '', location.pathname + encodeState(state) + (keepHash ? location.hash : ''));
   for (const b of document.querySelectorAll('#fields button')) b.setAttribute('aria-pressed', String(b.dataset.d === state.domain));
   if ($('q').value !== state.q) $('q').value = state.q;
 }
@@ -95,7 +125,7 @@ async function main() {
     li.append(b); ul.append(li);
   }
   Object.assign(state, decodeState(location.search));
-  sync(); draw();
+  sync(true); draw();
   let t;
   $('q').addEventListener('input', () => {
     clearTimeout(t);
@@ -108,7 +138,9 @@ async function main() {
     if (first) first.scrollIntoView({ block: 'start' });
     e.target.value = '';
   });
-  if (location.hash) document.querySelector(location.hash)?.scrollIntoView({ block: 'start' });
+  const go = () => { const y = hashYear(location.hash); mark(); if (y) document.getElementById(`y${y}`)?.scrollIntoView({ block: 'start' }); };
+  window.addEventListener('hashchange', go);
+  go();
 }
 
 main();

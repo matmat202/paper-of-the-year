@@ -85,3 +85,15 @@ export function decodeState(search) {
   const f = p.get('f') || '';
   return { domain: DOMAIN_KEYS.includes(f) ? f : '', q: (p.get('q') || '').slice(0, 80) };
 }
+
+/* The link to one year's entry, for sharing: "?f=3#y1998" when that year has works in the
+ * chosen field, "#y1998" otherwise. Never the search: a friend opening the link must land
+ * on the year, and a query they did not type could hide it. */
+export function yearLink(years, year, domain) {
+  const y = years.find((r) => r.year === year);
+  const f = domain && y && worksFor(y, domain).length ? domain : '';
+  return `${encodeState({ domain: f, q: '' })}#y${year}`;
+}
+
+// "#y1998" -> 1998; anything else -> null.
+export const hashYear = (hash) => { const m = /^#y(\d{4})$/.exec(hash || ''); return m ? +m[1] : null; };
