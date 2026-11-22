@@ -1,9 +1,9 @@
-import { search, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState, yearLink, hashYear } from './poy-logic.js';
+import { search, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState, yearLink, hashYear, ordered } from './poy-logic.js';
 
 const $ = (id) => document.getElementById(id);
 let D = null;
 let MAX = 1;
-const state = { domain: '', q: '' };
+const state = { domain: '', q: '', newest: false };
 
 function workEl(w, big) {
   const frag = document.createDocumentFragment();
@@ -36,13 +36,14 @@ function workEl(w, big) {
 }
 
 function draw() {
-  const rows = search(D.years, state.domain, state.q);
+  const rows = ordered(search(D.years, state.domain, state.q), state.newest);
   const ol = $('years');
   ol.replaceChildren();
   const label = state.domain ? D.domains[state.domain] : 'every field';
   $('status').textContent = state.q
     ? `${rows.length} ${rows.length === 1 ? 'year has' : 'years have'} a match for “${state.q}” in ${label}.`
     : `${rows.length} years, ${label}.`;
+  if (state.newest && rows.length > 1) $('status').textContent = $('status').textContent.replace(/\.$/, ', newest first.');
   $('status').textContent += ` Citations as of ${asOf(D.fetched)}.`;
   if (!rows.length) {
     const li = document.createElement('li'); li.className = 'empty';
@@ -108,6 +109,7 @@ function sync(keepHash = false) {
   history.replaceState(null, '', location.pathname + encodeState(state) + (keepHash ? location.hash : ''));
   for (const b of document.querySelectorAll('#fields button')) b.setAttribute('aria-pressed', String(b.dataset.d === state.domain));
   if ($('q').value !== state.q) $('q').value = state.q;
+  $('order').setAttribute('aria-pressed', String(state.newest));
 }
 
 async function main() {
@@ -130,6 +132,12 @@ async function main() {
   $('q').addEventListener('input', () => {
     clearTimeout(t);
     t = setTimeout(() => { state.q = $('q').value.slice(0, 80); sync(); draw(); }, 150);
+  });
+  // Flipping the order deep in the list would leave the reader at a random year: start over
+  // at the top of the list, under the sticky bar.
+  $('order').addEventListener('click', () => {
+    state.newest = !state.newest; sync(); draw();
+    if (window.scrollY > $('years').offsetTop) $('years').firstElementChild?.scrollIntoView({ block: 'start' });
   });
   $('jump').addEventListener('change', (e) => {
     const d = e.target.value;

@@ -72,19 +72,24 @@ export function asOf(fetched) {
 
 export const decadeOf = (y) => Math.floor(y / 10) * 10;
 
-// ?f=3&q=cryptography — unknown values fall back.
-export function encodeState({ domain, q }) {
+// ?f=3&q=cryptography&o=new — unknown values fall back.
+export function encodeState({ domain, q, newest }) {
   const p = new URLSearchParams();
   if (domain) p.set('f', domain);
   if (q && q.trim()) p.set('q', q.trim());
+  if (newest) p.set('o', 'new');
   const s = p.toString();
   return s ? `?${s}` : '';
 }
 export function decodeState(search) {
   const p = new URLSearchParams(search || '');
   const f = p.get('f') || '';
-  return { domain: DOMAIN_KEYS.includes(f) ? f : '', q: (p.get('q') || '').slice(0, 80) };
+  return { domain: DOMAIN_KEYS.includes(f) ? f : '', q: (p.get('q') || '').slice(0, 80), newest: p.get('o') === 'new' };
 }
+
+// The list opens at 1900; "newest first" puts the years people know at the top instead of
+// ~20,000 px down a phone. A copy, so the data's own order is never flipped under search.
+export const ordered = (rows, newest) => (newest ? [...rows].sort((a, b) => b.year - a.year) : rows);
 
 /* The link to one year's entry, for sharing: "?f=3#y1998" when that year has works in the
  * chosen field, "#y1998" otherwise. Never the search: a friend opening the link must land

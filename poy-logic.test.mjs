@@ -70,7 +70,17 @@ eq('empty state', L.encodeState({ domain: '', q: '' }), '');
 eq('a field with no query', L.encodeState({ domain: '2' }), '?f=2');
 eq('a query is cut at 80', L.decodeState('?q=' + 'x'.repeat(90)).q.length, 80);
 eq('fold keeps a zero', L.fold(0), '0');
-eq('state round-trips', L.decodeState(L.encodeState({ domain: '4', q: 'a b' })), { domain: '4', q: 'a b' });
+eq('state round-trips', L.decodeState(L.encodeState({ domain: '4', q: 'a b', newest: true })), { domain: '4', q: 'a b', newest: true });
+eq('newest first is in the address', L.encodeState({ domain: '', q: '', newest: true }), '?o=new');
+eq('oldest first is the default and leaves no trace', [L.encodeState({ domain: '2', newest: false }), L.decodeState('').newest, L.decodeState('?o=old').newest], ['?f=2', false, false]);
+
+// --- order ------------------------------------------------------------------------------
+{
+  const rows = [{ year: 1931 }, { year: 2019 }, { year: 1957 }, { year: 2026 }, { year: 1900 }];
+  eq('newest first sorts by year, descending', L.ordered(rows, true).map((r) => r.year), [2026, 2019, 1957, 1931, 1900]);
+  eq('oldest first keeps the data order', L.ordered(rows, false).map((r) => r.year), [1931, 2019, 1957, 2026, 1900]);
+  eq('ordering never flips the rows it was given', rows.map((r) => r.year), [1931, 2019, 1957, 2026, 1900]);
+}
 eq('bad field falls back', L.decodeState('?f=9').domain, '');
 
 // --- the running year -------------------------------------------------------------------
@@ -130,6 +140,7 @@ ok('2020\'s SciPy names its Stanford author', Y.get(2020).top[0].authors.some((a
 ok('the shipped name count adds up', all.every((x) => x.more >= 0 && x.authors.length <= 9));
 // --- per-year share links ----------------------------------------------------------
 eq('year link, every field', L.yearLink(years, 1998, ''), '#y1998');
+ok('a year link never carries the order', !/o=/.test(L.yearLink(years, 1979, '3')));
 eq('year link keeps a field the year has', L.yearLink(years, 1979, '3'), '?f=3#y1979');
 eq('year link drops a field the year lacks', L.yearLink(years, 1998, '3'), '#y1998');
 eq('year link drops an empty field list', L.yearLink(years, 1976, '1'), '#y1976');
@@ -154,6 +165,12 @@ const shippedDois = D.years.flatMap((y) => [...y.top, ...Object.values(y.domains
 eq('shipped: no DOI doi.org says it lacks', [...new Set(shippedDois.filter((d) => DEAD.has(d) || /\/10\.5555\//.test(d)))], []);
 const lda = D.years.flatMap((y) => y.top).filter((x) => /latent dirichlet/i.test(x.title));
 ok('LDA (2003) links to the paper at jmlr.org, not a dead DOI', lda.length >= 1 && lda.every((x) => /^https:\/\/www\.jmlr\.org\//.test(L.workUrl(x))));
+
+{
+  const all = L.ordered(L.search(D.years, '', ''), true);
+  eq('newest first opens on the fetch year and ends at 1900', [all[0].year, all.at(-1).year, all.length], [Number(D.fetched.slice(0, 4)), 1900, D.years.length]);
+  ok('the shipped data stays oldest first after a newest-first draw', D.years.every((y, i) => !i || D.years[i - 1].year < y.year));
+}
 
 console.log(`${fail ? 'FAILED' : 'ok'}: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
