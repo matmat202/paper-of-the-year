@@ -181,6 +181,23 @@ eq('shipped: no DOI doi.org says it lacks', [...new Set(shippedDois.filter((d) =
 const lda = D.years.flatMap((y) => y.top).filter((x) => /latent dirichlet/i.test(x.title));
 ok('LDA (2003) links to the paper at jmlr.org, not a dead DOI', lda.length >= 1 && lda.every((x) => /^https:\/\/www\.jmlr\.org\//.test(L.workUrl(x))));
 
+
+// --- the empty state says what to do next ----------------------------------------------
+{
+  const doms = { 2: 'Social Sciences', 3: 'Physical Sciences', 4: 'Health Sciences' };
+  eq('a field that hid a match offers every field back, singular',
+    L.emptyHint(years, '3', 'metacognition', doms), { text: 'Nothing in Physical Sciences matches “metacognition”.', action: { domain: '', label: 'Show 1 year in every field' } });
+  eq('the offer counts years, plural', L.emptyHint(years, '4', 'field', doms).action, { domain: '', label: 'Show 3 years in every field' });
+  const fewer = L.emptyHint(years, '', 'bootstrap zebra', doms);
+  ok('one word matching alone says drop words', /Try fewer words/.test(fewer.text) && fewer.action === null, JSON.stringify(fewer));
+  const none = L.emptyHint(years, '', 'zebra', doms);
+  ok('a miss everywhere says what the box reads, offers nothing', /top five/.test(none.text) && !/fewer words/.test(none.text) && none.action === null, JSON.stringify(none));
+  const inField = L.emptyHint(years, '2', 'zebra', doms);
+  ok('a miss in every field too is not offered every field', inField.action === null && /top five/.test(inField.text), JSON.stringify(inField));
+  const shipped = L.emptyHint(D.years, '3', 'metacognition', D.domains);
+  ok('on the shipped data a Physical Sciences miss offers every field', shipped.action && /^Show \d+ years? in every field$/.test(shipped.action.label), JSON.stringify(shipped));
+}
+
 {
   const all = L.ordered(L.search(D.years, '', ''), true);
   eq('newest first opens on the fetch year and ends at 1900', [all[0].year, all.at(-1).year, all.length], [Number(D.fetched.slice(0, 4)), 1900, D.years.length]);

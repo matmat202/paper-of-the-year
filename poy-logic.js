@@ -33,6 +33,23 @@ export function search(years, domain, q) {
   return out;
 }
 
+/* What to say when a search finds nothing, so the next tap is obvious: a field filter that
+ * hid real matches is offered back as every field (with how many years it would show); a
+ * multi-word query that one word alone matches says to drop words; otherwise say what the
+ * box reads, because a topic missing from five papers a year is not a broken search. */
+export function emptyHint(years, domain, q, domains = {}) {
+  const wider = domain ? search(years, '', q).length : 0;
+  if (wider) {
+    return { text: `Nothing in ${domains[domain] || 'this field'} matches “${q}”.`,
+      action: { domain: '', label: `Show ${wider} ${wider === 1 ? 'year' : 'years'} in every field` } };
+  }
+  const words = fold(q).split(/\s+/).filter(Boolean);
+  if (words.length > 1 && words.some((x) => search(years, domain, x).length)) {
+    return { text: `No paper matches every word of “${q}”. Try fewer words.`, action: null };
+  }
+  return { text: `Nothing matches “${q}”. The search reads the title, authors, topic and field of the papers listed here — each year's top five — not every Stanford paper.`, action: null };
+}
+
 /* "Ann Lee, Bo Chen + 3 more": up to `max` names, Stanford authors flagged for bolding.
  * Returns [{name, stanford}] plus the hidden count; a truncated OpenAlex list says so. */
 export function authorLine(w, max = 4) {

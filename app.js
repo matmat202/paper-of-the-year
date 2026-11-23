@@ -1,4 +1,4 @@
-import { search, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState, yearLink, hashYear, ordered } from './poy-logic.js';
+import { search, emptyHint, authorLine, barFrac, fmt, workUrl, decadeOf, isPartial, asOf, encodeState, decodeState, yearLink, hashYear, ordered } from './poy-logic.js';
 
 const $ = (id) => document.getElementById(id);
 let D = null;
@@ -47,7 +47,13 @@ function draw() {
   $('status').textContent += ` Citations as of ${asOf(D.fetched)}.`;
   if (!rows.length) {
     const li = document.createElement('li'); li.className = 'empty';
-    li.textContent = 'Nothing matches. Try fewer words, or every field.';
+    const hint = emptyHint(D.years, state.domain, state.q, D.domains);
+    li.append(hint.text);
+    if (hint.action) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'wider'; b.textContent = hint.action.label;
+      b.addEventListener('click', () => { state.domain = hint.action.domain; sync(); draw(); });
+      li.append(' ', b);
+    }
     ol.append(li);
   }
   for (const r of rows) {
@@ -146,6 +152,9 @@ async function main() {
     if (first) first.scrollIntoView({ block: 'start' });
     e.target.value = '';
   });
+  const bar = document.querySelector('.bar-top');
+  const barH = () => document.documentElement.style.setProperty('--bar-h', `${Math.ceil(bar.getBoundingClientRect().height)}px`);
+  barH(); new ResizeObserver(barH).observe(bar);
   const go = () => { const y = hashYear(location.hash); mark(); if (y) document.getElementById(`y${y}`)?.scrollIntoView({ block: 'start' }); };
   window.addEventListener('hashchange', go);
   go();
