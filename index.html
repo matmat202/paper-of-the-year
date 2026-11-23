@@ -38,7 +38,10 @@ main a,main summary,main button{scroll-margin-top:130px}
 .fields button{font:inherit;font-size:13px;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink-2);cursor:pointer}
 .fields button:hover{border-color:var(--accent);color:var(--ink)}
 .fields button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
-.row{display:flex;gap:6px}
+/* wrap: at 320-360 px the select and button left the search box 81-121 px, too narrow to
+   read its own placeholder ("Title, author, year" is 126 px at the 16 px iOS size below) */
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row #q{flex:1 1 160px}
 input{flex:1;min-width:0;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
 select{font:inherit;padding:9px 8px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
 .order{font:inherit;font-size:13px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink-2);cursor:pointer;white-space:nowrap}
