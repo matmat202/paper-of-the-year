@@ -38,6 +38,21 @@ eq('search within a field', L.search(years, '2', 'bootstrap'), []);
 eq('count is the whole year unfiltered', L.search(years, '', 'efron')[0].count, 2346);
 eq('count is the field\'s pool when filtered', L.search(years, '3', 'efron')[0].count, 700);
 
+// A reader who knows the subject but not the title or the authors types the subject. topic
+// and field are in the haystack for exactly that, and nothing searched for either until now
+// (mutwatch: both `|| ''` on L26 survived). Both fields are real and populated in
+// data/years.json ('Plant Diversity and Evolution' | 'Agricultural and Biological Sciences').
+{
+  const ys = [{ year: 2001, count: 1, domains: {},
+    top: [w('E', 'Untitled', [['Ada L', 1]], { topic: 'Phylogenetics', field: 'Biology' }),
+          w('F', 'Also untitled', [['Bo M', 1]], { topic: 'Cryptanalysis', field: 'Mathematics' })] }];
+  eq('a work is found by its topic', L.search(ys, '', 'phylogenetics')[0]?.works.map((x) => x.id), ['E']);
+  eq('a work is found by its field', L.search(ys, '', 'mathematics')[0]?.works.map((x) => x.id), ['F']);
+  eq('a subject in neither topic nor field matches nothing', L.search(ys, '', 'geology'), []);
+  eq('a missing topic or field is empty, not the word "undefined"',
+    L.search([{ year: 2002, count: 1, domains: {}, top: [{ id: 'G', title: 'T', authors: [['N', 1]], cites: 1 }] }], '', 'undefined'), []);
+}
+
 // --- author line ----------------------------------------------------------------------
 const many = w('E', 't', [['A1', 0], ['A2', 0], ['A3', 0], ['A4', 0], ['A5', 0], ['S6', 1], ['A7', 0]], { more: 10 });
 const al = L.authorLine(many, 4);
