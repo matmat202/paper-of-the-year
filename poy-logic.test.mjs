@@ -194,6 +194,17 @@ ok('LDA (2003) links to the paper at jmlr.org, not a dead DOI', lda.length >= 1 
   ok('a miss everywhere says what the box reads, offers nothing', /top five/.test(none.text) && !/fewer words/.test(none.text) && none.action === null, JSON.stringify(none));
   const inField = L.emptyHint(years, '2', 'zebra', doms);
   ok('a miss in every field too is not offered every field', inField.action === null && /top five/.test(inField.text), JSON.stringify(inField));
+  // "Try fewer words" is nonsense advice for a ONE-word query: there are no words to drop.
+  // The guard is `words.length > 1 && ...`, and both halves were unpinned until 2026-11-24 --
+  // `> 1` → `>= 1` and `&&` → `||` each make a single matching word take the drop-words
+  // branch, and the sweep could already tell both apart. The 'bootstrap zebra' case above
+  // only exercises the branch being TAKEN, so it cannot see either.
+  const oneHit = L.emptyHint(years, '', 'bootstrap', doms);
+  ok('a single word that does match is never told to use fewer words',
+    !/fewer words/.test(oneHit.text) && /top five/.test(oneHit.text) && oneHit.action === null,
+    JSON.stringify(oneHit));
+  const emptyQ = L.emptyHint(years, '', '   ', doms);
+  ok('a blank query has no words to drop either', !/fewer words/.test(emptyQ.text), JSON.stringify(emptyQ));
   const shipped = L.emptyHint(D.years, '3', 'metacognition', D.domains);
   ok('on the shipped data a Physical Sciences miss offers every field', shipped.action && /^Show \d+ years? in every field$/.test(shipped.action.label), JSON.stringify(shipped));
 }
